@@ -38,17 +38,24 @@
 #include "MPU9255.h"
 
 /* USER CODE BEGIN 0 */
-//250
-#define	Max_Write_Size 60 
+//249
+#define	Max_Write_Size 249 
 
 extern FATFS SDFatFs;
 extern FIL MyFile;
+FRESULT res;
+uint16_t kek;
 
 extern int16_t accel[3], gyro[3];
 
 volatile uint16_t read_count = 0;
 
 extern uint16_t send_flag;
+
+uint16_t buf_accel[Max_Write_Size], buf_accel2[Max_Write_Size];
+uint16_t buf_gyro[Max_Write_Size], buf_gyro2[Max_Write_Size];
+uint8_t buf_accel3[2*Max_Write_Size], buf_accel4[2*Max_Write_Size];
+uint8_t buf_gyro3[2*Max_Write_Size], buf_gyro4[2*Max_Write_Size];
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -219,49 +226,116 @@ void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
 	uint32_t byteswritten, bytesread;
-	uint16_t buf_accel[Max_Write_Size], buf_accel2[Max_Write_Size];
-	uint16_t buf_gyro[Max_Write_Size], buf_gyro2[Max_Write_Size];
 
-	FRESULT res;
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
-	if (read_count < 20)//83
+	if (read_count < 83)//83
 	{
 		uint16_t i = 3*read_count;
 		
-		MPU9250_READ_ACCEL();
+		MPU9250_READ_ACCEL();//read accelerometer data
 		buf_accel[i] = accel[0];
 		buf_accel[i+1] = accel[1];
 		buf_accel[i+2] = accel[2];
 
-		MPU9250_READ_GYRO();
+		//converse accelerometer data from 16 bit to 8 bit (LSB first)
+		buf_accel3[2*i] = (uint8_t)(buf_accel[i]);
+		buf_accel3[2*i+1] = (uint8_t)(((buf_accel[i])>>8));
+		buf_accel3[2*(i+1)] = (uint8_t)(buf_accel[i+1]);
+		buf_accel3[2*(i+1)+1] = (uint8_t)((buf_accel[i+1])>>8);
+		buf_accel3[2*(i+2)] = (uint8_t)(buf_accel[i+2]);
+		buf_accel3[2*(i+2)+1] = (uint8_t)((buf_accel[i+2])>>8);
+		
+		MPU9250_READ_GYRO();//read gyroscope data
 		buf_gyro[i] = gyro[0];
 		buf_gyro[i+1] = gyro[1];
 		buf_gyro[i+2] = gyro[2];
 		
-		read_count++;
+		buf_gyro3[2*i] = (uint8_t)(buf_gyro[i]);
+		buf_gyro3[2*i+1] = (uint8_t)(((buf_gyro[i])>>8));
+		buf_gyro3[2*(i+1)] = (uint8_t)(buf_gyro[i+1]);
+		buf_gyro3[2*(i+1)+1] = (uint8_t)((buf_gyro[i+1])>>8);
+		buf_gyro3[2*(i+2)] = (uint8_t)(buf_gyro[i+2]);
+		buf_gyro3[2*(i+2)+1] = (uint8_t)((buf_gyro[i+2])>>8);
+		
+		read_count++;//1 second data counter increments
 	}
 	else
 	{
-		res = f_open(&MyFile, "1.txt", FA_WRITE | FA_OPEN_ALWAYS);
-		//f_lseek(&MyFile, MyFile.fsize);
-		res = f_write(&MyFile, buf_accel, sizeof(buf_accel), &byteswritten);
-		res = f_write(&MyFile, buf_gyro, sizeof(buf_gyro), &byteswritten);
-		f_close(&MyFile);
-		HAL_UART_Transmit(&huart1, (uint8_t *)buf_accel, sizeof(buf_accel), 100);
-		HAL_UART_Transmit(&huart1, (uint8_t *)buf_gyro, sizeof(buf_gyro), 100);
+		if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6) == RESET)
+		{
+			res = f_mount(&SDFatFs, (TCHAR const*)SD_Path, 0);//mount drive on uSD
+			if( res != FR_OK)
+				Error_Handler();
+			else
+			{
+				res = f_open(&MyFile, "1.txt", FA_WRITE | FA_OPEN_ALWAYS);//open file to write data
+				if (res != FR_OK)
+					Error_Handler();
+				else
+				{
+					res = f_write(&MyFile, buf_accel, sizeof(buf_accel), &byteswritten);//write accelerometer data
+					//f_lseek(&MyFile, MyFile.fsize);
+					res = f_sync(&MyFile);
+					res = f_write(&MyFile, buf_gyro, sizeof(buf_gyro), &byteswritten);//write gyroscope data
+					res = f_close(&MyFile);//close file
+				}
+			}
+			f_mount(0, (TCHAR const*)SD_Path, 0);//unmount drive
+			
+			HAL_UART_Transmit(&huart1, buf_accel3, sizeof(buf_accel3), 100);
+			HAL_UART_Transmit(&huart1, buf_gyro3, sizeof(buf_accel3), 100);
+//			HAL_UART_Transmit(&huart1, (uint8_t *)buf_accel, sizeof(buf_accel), 100);//transmit accelerometer data
+//			HAL_UART_Transmit(&huart1, (uint8_t *)buf_gyro, sizeof(buf_gyro), 100);//transmit gyroscope data
 		
-		res = f_open(&MyFile, "1.txt", FA_READ | FA_OPEN_ALWAYS);
-		//f_lseek(&MyFile, MyFile.fsize);
-		res = f_read(&MyFile, buf_accel2, sizeof(buf_accel2), &byteswritten);
-		res = f_read(&MyFile, buf_gyro2, sizeof(buf_gyro2), &byteswritten);
-		f_close(&MyFile);
-		HAL_UART_Transmit(&huart1, (uint8_t *)buf_accel2, sizeof(buf_accel2), 100);
-		HAL_UART_Transmit(&huart1, (uint8_t *)buf_gyro2, sizeof(buf_gyro2), 100);
+			res = f_mount(&SDFatFs, (TCHAR const*)SD_Path, 0);//mount drive on uSD
+			if( res != FR_OK)
+				Error_Handler();
+			else 
+			{
+				res = f_open(&MyFile, "1.txt", FA_READ | FA_OPEN_ALWAYS);//open file to read data
+				if (res != FR_OK)
+					Error_Handler();
+				else
+				{
+					res = f_read(&MyFile, buf_accel2, sizeof(buf_accel2), &byteswritten);//read accelerometer data from file
+					res = f_read(&MyFile, buf_gyro2, sizeof(buf_gyro2), &byteswritten);//read gyroscope data from file
+					res = f_close(&MyFile);//close file
+				}
+			}
+			f_mount(0, (TCHAR const*)SD_Path, 0);//unmount drive
+			
+			for (uint16_t i = 0; i < Max_Write_Size; i+= 3)
+			{
+				buf_accel4[2*i] = (uint8_t)(buf_accel2[i]);
+				buf_accel4[2*i+1] = (uint8_t)(((buf_accel2[i])>>8));
+				buf_accel4[2*(i+1)] = (uint8_t)(buf_accel2[i+1]);
+				buf_accel4[2*(i+1)+1] = (uint8_t)((buf_accel2[i+1])>>8);
+				buf_accel4[2*(i+2)] = (uint8_t)(buf_accel2[i+2]);
+				buf_accel4[2*(i+2)+1] = (uint8_t)((buf_accel2[i+2])>>8);
+				
+				buf_gyro4[2*i] = (uint8_t)(buf_gyro2[i]);
+				buf_gyro4[2*i+1] = (uint8_t)(((buf_gyro2[i])>>8));
+				buf_gyro4[2*(i+1)] = (uint8_t)(buf_gyro2[i+1]);
+				buf_gyro4[2*(i+1)+1] = (uint8_t)((buf_gyro2[i+1])>>8);
+				buf_gyro4[2*(i+2)] = (uint8_t)(buf_gyro2[i+2]);
+				buf_gyro4[2*(i+2)+1] = (uint8_t)((buf_gyro2[i+2])>>8);
+			}
+			
+				HAL_UART_Transmit(&huart1, (uint8_t *)buf_accel4, sizeof(buf_accel4), 100);//transmit accelerometer data from file
+				HAL_UART_Transmit(&huart1, (uint8_t *)buf_gyro4, sizeof(buf_gyro4), 100);//transmit gyroscope data from file
+//			HAL_UART_Transmit(&huart1, (uint8_t *)buf_gyro2, sizeof(buf_gyro2), 100);
 		
-		read_count = 0;
-		//send_flag = 1;
+			read_count = 0;//1 second data counter sets to zero
+			HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_13);//
+			//send_flag = 1;
+		}
+		else 
+		{
+			HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_13);
+			HAL_Delay(100);
+		}
 	}
   /* USER CODE END TIM2_IRQn 1 */
 }

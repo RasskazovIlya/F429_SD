@@ -49,11 +49,11 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 #include "fatfs.h"
+/* USER CODE BEGIN Includes */
+#include "MPU9255.h"
 #define    DWT_CYCCNT    *(volatile unsigned long *)0xE0001004
 #define    DWT_CONTROL   *(volatile unsigned long *)0xE0001000
 #define    SCB_DEMCR     *(volatile unsigned long *)0xE000EDFC
-/* USER CODE BEGIN Includes */
-#include "MPU9255.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -96,10 +96,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	FRESULT res;                                          /* FatFs function common result code */
-  uint32_t byteswritten, bytesread;                     /* File write/read counts */
-  char wtext[30];
-  uint8_t rtext[100];                                   /* File read buffer */
+
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -133,12 +130,11 @@ int main(void)
 		HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_13);
 		HAL_Delay(200);
 	}
-
-	res = f_mount(&SDFatFs, (TCHAR const*)SD_Path, 0);
-	if( res != FR_OK)
-		Error_Handler();
-
+	HAL_SD_Init(&hsd);
+	HAL_SD_InitCard(&hsd);
+	
 	MPU9250_Init();
+	
 	HAL_TIM_Base_Start(&htim2);
 	HAL_TIM_Base_Start_IT(&htim2);
 	
@@ -277,9 +273,9 @@ static void MX_TIM2_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 16800;//10 kHz freq
+  htim2.Init.Prescaler = 8400;//10 kHz freq
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 200;
+  htim2.Init.Period = 130;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
@@ -306,7 +302,7 @@ static void MX_USART1_UART_Init(void)
 {
 
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 230400;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;

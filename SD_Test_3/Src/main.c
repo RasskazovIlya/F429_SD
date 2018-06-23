@@ -49,11 +49,9 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 #include "fatfs.h"
+
 /* USER CODE BEGIN Includes */
 #include "MPU9255.h"
-#define    DWT_CYCCNT    *(volatile unsigned long *)0xE0001004
-#define    DWT_CONTROL   *(volatile unsigned long *)0xE0001000
-#define    SCB_DEMCR     *(volatile unsigned long *)0xE000EDFC
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -71,8 +69,6 @@ FATFS SDFatFs;
 FIL MyFile;
 extern char SD_Path[4];
 int16_t accel[3], gyro[3];
-uint32_t count_tic;
-uint8_t send_flag;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -124,6 +120,8 @@ int main(void)
   MX_TIM2_Init();
 
   /* USER CODE BEGIN 2 */
+	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+	USART1->CR1 |= USART_CR1_RXNEIE;
 	
 	while(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6) == SET)
 	{
@@ -133,43 +131,16 @@ int main(void)
 	HAL_SD_Init(&hsd);
 	HAL_SD_InitCard(&hsd);
 	
-	MPU9250_Init();
-	
-	HAL_TIM_Base_Start(&htim2);
-	HAL_TIM_Base_Start_IT(&htim2);
-	
-//	SCB_DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-//	DWT_CYCCNT  = 0;
-//	DWT_CONTROL|= DWT_CTRL_CYCCNTENA_Msk;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	send_flag = 0;
   while (1)
   {
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		if (send_flag == 1)
-		{
-			HAL_TIM_Base_Stop(&htim2);
-			HAL_TIM_Base_Stop_IT(&htim2);
-			send_flag = 0;
-		}
-//		DWT_CONTROL|= DWT_CTRL_CYCCNTENA_Msk;
-//		
-//		MPU9250_READ_ACCEL();
-//		MPU9250_READ_GYRO();
-		
-//		res = f_open(&MyFile, "1.txt", FA_WRITE | FA_OPEN_ALWAYS);
-//		f_lseek(&MyFile, MyFile.fsize);
-//		res = f_write(&MyFile, accel, sizeof(accel), &byteswritten);
-//		f_close(&MyFile);
-		
-//		count_tic =  DWT_CYCCNT;//Code execution time ~12 ms (200000/168000000) => read MPU ~83 times 
-//		DWT_CONTROL &= ~DWT_CTRL_CYCCNTENA_Msk; 
-//		DWT_CYCCNT  = 0;
   }
   /* USER CODE END 3 */
 
@@ -273,7 +244,7 @@ static void MX_TIM2_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 8400;//10 kHz freq
+  htim2.Init.Prescaler = 8400;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 130;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -344,12 +315,22 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PG9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
   /*Configure GPIO pin : PG13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 }
 

@@ -373,7 +373,7 @@
               <MiscControls>--C99</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F429xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;    ../Drivers/STM32F4xx_HAL_Driver/Inc;    ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;    ../Middlewares/Third_Party/FatFs/src/drivers;    ../Drivers/CMSIS/Device/ST/STM32F4xx/Include;    ../Middlewares/Third_Party/FatFs/src;    ../Drivers/CMSIS/Include;    ..\Hardware;    ..\Hardware\I2C;    ..\Hardware\IMU;    ..\Hardware\MPU9250;    ..\Hardware\Public</IncludePath>
+              <IncludePath>../Inc;             ../Drivers/STM32F4xx_HAL_Driver/Inc;             ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;             ../Middlewares/Third_Party/FatFs/src/drivers;             ../Drivers/CMSIS/Device/ST/STM32F4xx/Include;             ../Middlewares/Third_Party/FatFs/src;             ../Drivers/CMSIS/Include;             ..\Hardware;             ..\Hardware\I2C;             ..\Hardware\IMU;             ..\Hardware\MPU9250;             ..\Hardware\Public</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -560,6 +560,11 @@
               <FileName>diskio.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Middlewares/Third_Party/FatFs/src/diskio.c</FilePath>
+            </File>
+            <File>
+              <FileName>unicode.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Middlewares\Third_Party\FatFs\src\option\unicode.c</FilePath>
             </File>
           </Files>
         </Group>

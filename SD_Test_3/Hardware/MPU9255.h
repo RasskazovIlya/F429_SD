@@ -31,6 +31,7 @@
 #define	CONFIG				0x1A	//Low Pass Filter.Typical values:0x06(5Hz)
 #define	GYRO_CONFIG		0x1B	//Gyro Full Scale Select. Typical values:0x10(1000dps)
 #define	ACCEL_CONFIG	0x1C	//Accel Full Scale Select. Typical values:0x01(2g)
+#define	ACCEL_CONFIG2	0x1D	//Accel Low Pass Filter
 
 #define	ACCEL_XOUT_H	0x3B
 #define	ACCEL_XOUT_L	0x3C
@@ -66,6 +67,9 @@
 #define MAG_ADDRESS    0x18   //compass device address
 #define ACCEL_ADDRESS  0xD0 
 
+#define INT_PIN_CFG					0x37 //INT pin configuration
+#define INT_ENABLE					0x38 //interrupt configuration register
+#define INT_STATUS					0x3A //interrupt status register
 #define ADDRESS_AD0_LOW     0xD0 //address pin low (GND), default for InvenSense evaluation board
 #define ADDRESS_AD0_HIGH    0xD1 //address pin high (VCC)
 #define DEFAULT_ADDRESS     GYRO_ADDRESS

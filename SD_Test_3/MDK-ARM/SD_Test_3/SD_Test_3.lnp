@@ -25,6 +25,7 @@
 "sd_test_3\sd_diskio.o"
 "sd_test_3\ff_gen_drv.o"
 "sd_test_3\diskio.o"
+"sd_test_3\unicode.o"
 "sd_test_3\stm32f4xx_it.o"
 "sd_test_3\bsp_driver_sd.o"
 "sd_test_3\fatfs.o"

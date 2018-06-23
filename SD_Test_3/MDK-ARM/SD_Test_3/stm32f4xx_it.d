@@ -44,3 +44,5 @@ sd_test_3\stm32f4xx_it.o: ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h
 sd_test_3\stm32f4xx_it.o: ../Middlewares/Third_Party/FatFs/src/diskio.h
 sd_test_3\stm32f4xx_it.o: ../Middlewares/Third_Party/FatFs/src/drivers/sd_diskio.h
 sd_test_3\stm32f4xx_it.o: ..\Hardware\MPU9255.h
+sd_test_3\stm32f4xx_it.o: E:\Programs\Keil_5\ARM\ARMCC\Bin\..\include\string.h
+sd_test_3\stm32f4xx_it.o: E:\Programs\Keil_5\ARM\ARMCC\Bin\..\include\stdlib.h

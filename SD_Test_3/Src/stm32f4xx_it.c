@@ -455,11 +455,12 @@ void USART1_IRQHandler(void)
 							num_str = f_size(&MyFile)/(sizeof(buf_accel) + sizeof(buf_gyro));//get amount of data in file
 
 							//32 to 8 bit conversion 
-							num_str8bit[0] = (uint8_t)(num_str);
-							num_str8bit[1] = (uint8_t)(num_str >> 8);
-							num_str8bit[2] = (uint8_t)(num_str >> 16);
-							num_str8bit[3] = (uint8_t)(num_str >> 24);
-							HAL_UART_Transmit(&huart1, num_str8bit, sizeof(time_mark), 10);
+							num_str8bit[3] = (uint8_t)(num_str);
+							num_str8bit[2] = (uint8_t)(num_str >> 8);
+							num_str8bit[1] = (uint8_t)(num_str >> 16);
+							num_str8bit[0] = (uint8_t)(num_str >> 24);
+							HAL_UART_Transmit(&huart1, num_str8bit,4, 10);
+//							HAL_UART_Transmit(&huart1, (uint8_t *)&num_str, 1, 10);
 //							for (uint32_t i = 0; i < num_str; i++)
 //							{
 //								f_read(&MyFile, buf_accel2, sizeof(buf_accel2), &bytesread);

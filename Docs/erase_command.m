@@ -6,9 +6,7 @@ s1.Timeout = 10;
 
 fopen(s1);
 
-command = 's';
-date = datestr(clock, 'dd_mm_yyyy_HH_MM_SS_FFF');
-command = strcat(command, date);
-fwrite(s1, command);
+command = 'e';
+fwrite(s1,command);
 
 fclose(s1);

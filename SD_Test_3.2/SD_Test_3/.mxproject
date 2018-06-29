@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=E:/Documents/Ботва/Микроконтроллеры/F429_SD_Gyro/Project/SD_Test_3/Inc
+HeaderPath=E:/Documents/F429_SD/F429_SD/SD_Test_3.2/SD_Test_3/Inc
 HeaderFiles=ffconf.h;bsp_driver_sd.h;fatfs.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;
-SourcePath=E:/Documents/Ботва/Микроконтроллеры/F429_SD_Gyro/Project/SD_Test_3/Src
+SourcePath=E:/Documents/F429_SD/F429_SD/SD_Test_3.2/SD_Test_3/Src
 SourceFiles=ffconf.h;bsp_driver_sd.h;fatfs.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;bsp_driver_sd.c;fatfs.c;stm32f4xx_it.c;stm32f4xx_hal_msp.c;main.c;
 
 [PreviousLibFiles]

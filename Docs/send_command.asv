@@ -1,5 +1,3 @@
-clear all;
-close all;
 delete(instrfindall);
 %<<<<<<< HEAD
 %s1 = serial('COM23','DataBits',8); 
@@ -34,8 +32,8 @@ for i = 1:num_str
     time_mark8bit = fread(s1, 4);%read time mark (4 bytes)
     
     for j = 1:3
-        accel(3*i+j-3) = bitor( bitshift(temp_accel(2*j),8), temp_accel(2*j-1) );%write accel data as 16bit number 
-        gyro(3*i+j-3) = bitor( bitshift(temp_gyro(2*j),8), temp_gyro(2*j-1) );%write gyro data as 16bit number
+        accel(3*i+j-3) = bitor( bitshift(temp_accel(2*j),8), temp_accel(2*j-1) );%
+        gyro(3*i+j-3) = bitor( bitshift(temp_gyro(2*j),8), temp_gyro(2*j-1) );
     end
     
     time_mark(i) = bitor( bitor( bitshift(time_mark8bit(4),24), bitshift(time_mark8bit(3),16)), bitor( bitshift(time_mark8bit(2),8), time_mark8bit(1) ) );

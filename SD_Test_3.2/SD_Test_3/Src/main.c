@@ -59,7 +59,7 @@ I2C_HandleTypeDef hi2c1;
 
 SD_HandleTypeDef hsd;
 
-UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -74,7 +74,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_I2C1_Init(void);
-static void MX_USART2_UART_Init(void);
+static void MX_USART3_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -113,15 +113,15 @@ int main(void)
   MX_SDIO_SD_Init();
   MX_FATFS_Init();
   MX_I2C1_Init();
-  MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
 
   /* USER CODE BEGIN 2 */
 	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
-	USART2->CR1 |= USART_CR1_RXNEIE;
+	USART3->CR1 |= USART_CR1_RXNEIE;
 	
-	while(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6) == SET)
+	while(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_6) == SET)//if uSD is not inserted
 	{
-		HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_13);
+		HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_13);//LD3 flash
 		HAL_Delay(200);
 	}
 	
@@ -231,19 +231,19 @@ static void MX_SDIO_SD_Init(void)
 
 }
 
-/* USART2 init function */
-static void MX_USART2_UART_Init(void)
+/* USART3 init function */
+static void MX_USART3_UART_Init(void)
 {
 
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 230400;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 230400;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
@@ -264,11 +264,11 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);

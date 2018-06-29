@@ -62,7 +62,6 @@
 #define	PWR_MGMT_1		0x6B	//Power Management. Typical values:0x00(run mode)
 #define	WHO_AM_I		  0x75	//identity of the device
 
-#define MPU9250_ADDRESS_W  0x68
 #define	GYRO_ADDRESS   0xD0	  //Gyro and Accel device address
 #define MAG_ADDRESS    0x18   //compass device address
 #define ACCEL_ADDRESS  0xD0 

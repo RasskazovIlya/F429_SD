@@ -6,14 +6,15 @@
 extern I2C_HandleTypeDef hi2c1;
 extern int16_t accel[3], gyro[3];// x, y, z axis for accelerometer and gyroscope
 MPU9250_TypeDef MPU9250_Offset={0};
-//MPU9250_TypeDef_Off MPU9250_Magn_Offset={0};
+
 unsigned char BUF[10];
 
 void MPU9250_Init(void)
 {
-	uint8_t R, c;
+	uint8_t R;
   HAL_I2C_Mem_Write(&hi2c1, GYRO_ADDRESS, PWR_MGMT_1, 1, 0x00, 1, 100);
 	HAL_Delay(100);
+	
 	//Set clock source to PLL if ready, else - internal oscillator (20 MHz)
 	R = 0x01;
 	HAL_I2C_Mem_Write(&hi2c1, GYRO_ADDRESS, PWR_MGMT_1, 1, &R, 1, 100);
@@ -41,6 +42,7 @@ void MPU9250_Init(void)
 	R = 0x01;
 	HAL_I2C_Mem_Write(&hi2c1, GYRO_ADDRESS, INT_ENABLE, 1, &R, 1, 100);
 	
+	//INT_STATUS Register check
 	uint8_t INT_status = 0;
 	HAL_I2C_Mem_Read(&hi2c1, GYRO_ADDRESS, INT_STATUS, 1, &INT_status, 1, 100);
 	HAL_Delay(10);
@@ -66,24 +68,18 @@ int MPU9250_Check(void)
 }
 
 //Read data from accelerator
-void MPU9250_READ_ACCEL(void)//code execution time ~6 ms
+void MPU9250_READ_ACCEL(void)//code execution time ~0.6 ms
 { 
    uint8_t i;
 	 int16_t InBuffer[3] = {0}; 
 	 static int32_t OutBuffer[3] = {0};
 	 static MPU9250_AvgTypeDef MPU9250_Filter[3];
 
-	 HAL_I2C_Mem_Read(&hi2c1, ACCEL_ADDRESS, ACCEL_XOUT_L, 1, &BUF[0], 1, 100);
-	 HAL_I2C_Mem_Read(&hi2c1, ACCEL_ADDRESS, ACCEL_XOUT_H, 1, &BUF[1], 1, 100);
-   InBuffer[0]=	(BUF[1]<<8)|BUF[0];
-
-	 HAL_I2C_Mem_Read(&hi2c1, ACCEL_ADDRESS, ACCEL_YOUT_L, 1, &BUF[2], 1, 100);
-	 HAL_I2C_Mem_Read(&hi2c1, ACCEL_ADDRESS, ACCEL_YOUT_H, 1, &BUF[3], 1, 100);
-   InBuffer[1]=	(BUF[3]<<8)|BUF[2];
-					
-	 HAL_I2C_Mem_Read(&hi2c1, ACCEL_ADDRESS, ACCEL_ZOUT_L, 1, &BUF[4], 1, 100);
-	 HAL_I2C_Mem_Read(&hi2c1, ACCEL_ADDRESS, ACCEL_ZOUT_H, 1, &BUF[5], 1, 100);   
-   InBuffer[2]=	(BUF[5]<<8)|BUF[4];			       
+	 //read accel  x, y, z axis from MPU registers
+	 HAL_I2C_Mem_Read(&hi2c1, ACCEL_ADDRESS, ACCEL_XOUT_H, 1, &BUF[0], 6, 10);
+   InBuffer[0]=	(BUF[0]<<8)|BUF[1];
+   InBuffer[1]=	(BUF[2]<<8)|BUF[3];   
+   InBuffer[2]=	(BUF[4]<<8)|BUF[5];			       
    
    for(i = 0; i < 3; i ++)	
    {
@@ -96,24 +92,18 @@ void MPU9250_READ_ACCEL(void)//code execution time ~6 ms
 }
 
 //Read data from gyroscope
-void MPU9250_READ_GYRO(void)//code execution time ~6 ms
+void MPU9250_READ_GYRO(void)//code execution time ~0.6 ms
 { 
    uint8_t i;
 	 int16_t InBuffer[3] = {0}; 
 	 static int32_t OutBuffer[3] = {0};
 	 static MPU9250_AvgTypeDef MPU9250_Filter[3];
-
-   HAL_I2C_Mem_Read(&hi2c1, GYRO_ADDRESS, GYRO_XOUT_L, 1, &BUF[0], 1, 100);
-	 HAL_I2C_Mem_Read(&hi2c1, GYRO_ADDRESS, GYRO_XOUT_H, 1, &BUF[1], 1, 100);
-   InBuffer[0]=	(BUF[1]<<8)|BUF[0];
-
-	 HAL_I2C_Mem_Read(&hi2c1, GYRO_ADDRESS, GYRO_YOUT_L, 1, &BUF[2], 1, 100);
-	 HAL_I2C_Mem_Read(&hi2c1, GYRO_ADDRESS, GYRO_YOUT_H, 1, &BUF[3], 1, 100);
-   InBuffer[1]=	(BUF[3]<<8)|BUF[2];
-					
-	 HAL_I2C_Mem_Read(&hi2c1, GYRO_ADDRESS, GYRO_ZOUT_L, 1, &BUF[4], 1, 100);
-	 HAL_I2C_Mem_Read(&hi2c1, GYRO_ADDRESS, GYRO_ZOUT_H, 1, &BUF[5], 1, 100);   
-   InBuffer[2]=	(BUF[5]<<8)|BUF[4];	
+	 
+	 //read accel  x, y, z axis from MPU registers
+	 HAL_I2C_Mem_Read(&hi2c1, GYRO_ADDRESS, GYRO_XOUT_H, 1, &BUF[0], 6, 10);
+   InBuffer[0]=	(BUF[0]<<8)|BUF[1];
+   InBuffer[1]=	(BUF[2]<<8)|BUF[3];	
+   InBuffer[2]=	(BUF[4]<<8)|BUF[5];	
 
    for(i = 0; i < 3; i ++)	
    {
@@ -140,3 +130,5 @@ void MPU9250_CalAvgValue(uint8_t *pIndex, int16_t *pAvgBuffer, int16_t InVal, in
   	}
   	*pOutVal >>= 3;
 }
+
+
